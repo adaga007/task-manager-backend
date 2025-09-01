@@ -13,11 +13,19 @@ export const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newUser = new User({ username, email, password: hashedPassword });
-    await newUser.save();
+    const user = await newUser.save();
 
-    res.json({ msg: "User registered successfully", user: newUser });
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1d",
+    });
+
+    res.json({
+      token,
+      msg: "User registered successfully",
+      user: { id: user._id, username: user.username, email: user.email },
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: "My name is happy testing" });
   }
 };
 
